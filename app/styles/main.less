@@ -1,0 +1,39 @@
+@import "../bower_components/bootstrap/less/bootstrap.less";
+@icon-font-path: "../fonts/glyphicons/";
+
+@import "../bower_components/font-awesome/less/font-awesome.less";
+@fa-font-path: "../fonts/font-awesome";
+
+/* Variables */
+@header-footer-text-color: @gray-light;
+@sidebar-margin: 20px;
+@sidebar-bg: lighten(@brand-info, 40%);
+@sidebar-hover: darken(@brand-info, 15%);
+@sidebar-border: 1px solid lighten(@gray-light, 40%);
+
+.browsehappy {
+  margin: 0.2em 0;
+  background: #ccc;
+  color: #000;
+  padding: 0.2em 0;
+}
+
+/* Move down content because we have a fixed navbar that is 50px tall */
+body {
+  padding-top: 50px;
+}
+
+/*
+ * Main content
+ */
+
+.main {
+  padding: @sidebar-margin;
+  .page-header {
+    margin-top: 0
+  }
+  @media screen and (min-width: @screen-sm-min) {
+    padding-right: @sidebar-margin * 2;
+    padding-left: @sidebar-margin * 2;
+  }
+}
