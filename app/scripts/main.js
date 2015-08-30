@@ -2,47 +2,73 @@
 
 var SoulfitFactory = SoulfitFactory || 'Error loading Soulfit';
 var Chartist = Chartist || 'Error loading Chartist';
+var jsonString, jsonFullString;
 
 var chartoptions = {
-  // Set your chart options here
+  fullWidth: true,
+  seriesBarDistance: 20,
+  stackBars: true,
+  lineSmooth: true
 };
 
-function setStatusBars(soulfitPerson, soulfitTotal) {
-  // Write some JQuery to set the Status Bars
+function setStatusBars(person, total) {
+  $('#personRunning').attr({
+    'aria-valuemax': total.totalRunning,
+    'aria-valuenow': person.totalRunning,
+    'style': 'width: '+ person.totalRunning / total.totalRunning * 100 +'%'
+  });
+  $('#personReading').attr({
+    'aria-valuemax': total.totalPages,
+    'aria-valuenow': person.totalPages,
+    'style': 'width: '+ person.totalPages / total.totalPages * 100 +'%'
+  });
+
+  $('#personRunning').html(person.totalRunning);
+  $('#personReading').html(person.totalPages);
 }
 
 function stringifyJSON(string) {
   return JSON.stringify(string, null, 2);
 }
 
-function fetchSoulfitData(soulfitObj) {
-  $.getJSON(soulfitObj.soulfitUrl)
-    .done(function(data) {
-      soulfitObj.sanitizeSoulfitDataJSON(data);
-      soulfitObj.generateChartistData(soulfitObj.soulfitData);
-      $('#soulfitDebug').html(stringifyJSON(soulfitObj.soulfitData));
-
-      // Write code here to update status bars and create Chartist data;
-
-    })
-    .fail(function() {
-      console.log('Error loading data from ' + soulfitObj.soulfitUrl);
-    });
-}
-
-// Do JQuery manipulation here:
-
 $(document).ready(function() {
-  // Initialize soulfitObjects
-  var soulfitUrl = 'https://spreadsheets.google.com/feeds/list/1zWeJSlmhone9MzwoUNxCFzBIySOMEo8OoGhClgZLGS4/default/public/values?alt=json';
-  var soulfit = new SoulfitFactory(soulfitUrl);
+  var soulfit = new SoulfitFactory('https://spreadsheets.google.com/feeds/list/1zWeJSlmhone9MzwoUNxCFzBIySOMEo8OoGhClgZLGS4/default/public/values?alt=json');
   var soulfitPerson = new SoulfitFactory();
 
-  fetchSoulfitData(soulfit);
+  $.getJSON(soulfit.soulfitUrl)
+    .done(function(data) {
+      soulfit.sanitizeSoulfitDataJSON(data);
+      soulfit.generateChartistData(soulfit.soulfitData);
+      jsonFullString = stringifyJSON(soulfit.soulfitData);
+      $('#soulfitDebug').html(stringifyJSON(soulfit.ctData));
+      setStatusBars(soulfit, soulfit);
+
+      $('#chartData').fadeOut('fast');
+      $('#chartTime').fadeOut('fast');
+
+      new Chartist.Bar('#chartData', soulfit.ctData, chartoptions);
+      new Chartist.Line('#chartTime', soulfit.ctTimeData, chartoptions);
+
+      $('#chartData').fadeIn('slow');
+      $('#chartTime').fadeIn('slow');
+    })
+    .fail(function() {
+      console.log('Error loading data');
+    });
 
   $('#personName').on('change', function() {
-    // When the personName value changes update all the data
-
     $('#person').html($(this).val());
+    $('#chartData').fadeOut('fast');
+    $('#chartTime').fadeOut('fast');
+    soulfitPerson.filterByName($(this).val(), soulfit.soulfitData);
+    setStatusBars(soulfitPerson, soulfit);
+    $('#soulfitDebug').html(stringifyJSON(soulfitPerson.soulfitData));
+
+
+    new Chartist.Bar('#chartData', soulfitPerson.ctData, chartoptions);
+    new Chartist.Line('#chartTime', soulfitPerson.ctTimeData, chartoptions);
+
+    $('#chartData').fadeIn('slow');
+    $('#chartTime').fadeIn('slow');
   });
 });
